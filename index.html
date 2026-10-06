@@ -745,7 +745,6 @@
               <option value="all">Any price</option>
               <option value="under-5000">Under PKR 5,000</option>
               <option value="5000-25000">PKR 5,000–25,000</option>
-              <option value="25000-1000000">PKR 25,000–1M</option>
               <option value="over-1000000">PKR 1M and above</option>
             </select>
           </div>
@@ -1058,7 +1057,6 @@
       function matchesPrice(price, range) {
         if (range === 'under-5000') return price < 5000;
         if (range === '5000-25000') return price >= 5000 && price <= 25000;
-        if (range === '25000-1000000') return price > 25000 && price < 1000000;
         if (range === 'over-1000000') return price >= 1000000;
         return true;
       }
