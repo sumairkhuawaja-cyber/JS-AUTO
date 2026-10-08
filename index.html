@@ -359,6 +359,36 @@
     .btn-wa:hover, .btn-wa:focus-visible { filter: brightness(.9); }
     .empty-state { display: none; padding: 40px; text-align: center; background: var(--surface); color: var(--muted); }
     .empty-state.visible { display: block; }
+    .load-more-wrap { text-align: center; padding: 28px 0 6px; }
+    .btn-load-more {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 42px;
+      padding: 9px 26px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--accent);
+      font-family: "Barlow Condensed", sans-serif;
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+      transition: all .22s ease;
+    }
+    .btn-load-more:hover, .btn-load-more:focus-visible {
+      background: var(--accent);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(227, 38, 54, .32);
+    }
+    .load-more-icon { width: 17px; height: 17px; transition: transform .22s ease; }
+    .btn-load-more:hover .load-more-icon { transform: translateY(2px); }
+    .load-more-count { margin: 8px 0 0; color: var(--muted); font-size: .82rem; font-weight: 600; }
     .feature-strip { padding: 0 0 32px; }
     .feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--dark); color: white; border-radius: 4px; overflow: hidden; }
     .feature { min-height: 100px; padding: 16px 20px; border-right: 1px solid rgba(255,255,255,.14); }
@@ -1380,6 +1410,15 @@
           </article>
         </div>
         <div id="empty-state" class="empty-state">No products match that search. Try another keyword or category.</div>
+        <div id="load-more-wrap" class="load-more-wrap">
+          <button type="button" class="btn btn-load-more" id="load-more-btn">
+            <svg viewBox="0 0 24 24" fill="none" class="load-more-icon" aria-hidden="true">
+              <path d="M12 4v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Load More Products</span>
+          </button>
+          <p class="load-more-count" id="load-more-count">Showing 8 of 53 products</p>
+        </div>
       </div>
     </section>
 
@@ -1519,6 +1558,12 @@
       var count = document.getElementById('result-count');
       var activeLabel = document.getElementById('active-filter-label');
       var empty = document.getElementById('empty-state');
+      var loadMoreBtn = document.getElementById('load-more-btn');
+      var loadMoreWrap = document.getElementById('load-more-wrap');
+      var loadMoreCount = document.getElementById('load-more-count');
+      var PAGE_SIZE = 8;
+      var visibleLimit = PAGE_SIZE;
+      var currentMatching = [];
       var activeFilter = 'all';
       var cart = {};
       var wishlist = {};
@@ -1571,23 +1616,55 @@
         var words = normText(query).split(/\s+/).filter(function (w) { return w; });
         return words.every(function (w) { return hay.indexOf(w) !== -1; });
       }
+      function updatePaginationUI() {
+        var total = currentMatching.length;
+        if (total === 0) {
+          if (loadMoreWrap) loadMoreWrap.style.display = 'none';
+          return;
+        }
+        if (loadMoreWrap) loadMoreWrap.style.display = 'block';
+        currentMatching.forEach(function (product, index) {
+          product.hidden = index >= visibleLimit;
+        });
+        if (visibleLimit >= total) {
+          if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+          if (loadMoreCount) loadMoreCount.textContent = 'Showing all ' + total + (total === 1 ? ' product' : ' products');
+        } else {
+          if (loadMoreBtn) loadMoreBtn.style.display = 'inline-flex';
+          if (loadMoreCount) loadMoreCount.textContent = 'Showing ' + Math.min(visibleLimit, total) + ' of ' + total + ' products';
+        }
+      }
+
       function applyFilters() {
+        visibleLimit = PAGE_SIZE;
         var query = search.value.trim();
         var range = priceFilter.value;
-        var visible = 0;
         sortInventory();
+        currentMatching = [];
         products.forEach(function (product) {
           var categoryMatch = activeFilter === 'all' || product.dataset.type === activeFilter;
           var searchMatch = matchesSearch(product, query);
           var priceMatch = matchesPrice(Number(product.dataset.price), range);
-          product.hidden = !(categoryMatch && searchMatch && priceMatch);
-          if (!product.hidden) visible += 1;
+          if (categoryMatch && searchMatch && priceMatch) {
+            currentMatching.push(product);
+          } else {
+            product.hidden = true;
+          }
         });
+        updatePaginationUI();
+        var visible = currentMatching.length;
         count.textContent = visible + (visible === 1 ? ' product' : ' products');
         var categoryName = activeFilter === 'all' ? 'all inventory' : ({ oilfilter: 'oil filters', airac: 'air & AC filters', fuelfilter: 'fuel filters', transoil: 'transmission oils', brakecool: 'brake oils & coolants', carcare: 'cleaners & car care' }[activeFilter]);
         activeLabel.textContent = query || range !== 'all' ? 'Filtered ' + categoryName : 'Showing ' + categoryName;
         empty.textContent = 'No products match those filters. Try another keyword, price range or category.';
         empty.classList.toggle('visible', visible === 0);
+      }
+
+      if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function () {
+          visibleLimit += PAGE_SIZE;
+          updatePaginationUI();
+        });
       }
 
       function setFilter(value) {
@@ -2023,6 +2100,7 @@
       updateCounts();
       renderWishlist();
       renderCart();
+      applyFilters();
     }());
   </script>
 </body>
