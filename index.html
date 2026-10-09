@@ -2106,7 +2106,7 @@
         if (range === 'under-1000') return price < 1000;
         if (range === '1000-5000') return price >= 1000 && price <= 5000;
         if (range === '5000-10000') return price > 5000 && price <= 10000;
-        if (range === 'over-10000') return price > 10000;
+        if (range === 'over-10000') return price >= 10000;
         return true;
       }
 
@@ -2121,13 +2121,40 @@
         sorted.forEach(function (product) { inventory.appendChild(product); });
       }
 
-      function normText(s) { return (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, ' '); }
       function matchesSearch(product, query) {
         if (!query) return true;
-        var hay = normText(product.dataset.search + ' ' + product.getAttribute('data-name'));
-        var words = normText(query).split(/\s+/).filter(function (w) { return w; });
-        return words.every(function (w) { return hay.indexOf(w) !== -1; });
+        var q = query.trim().toLowerCase();
+        if (!q) return true;
+
+        var hay = product._searchIndex || '';
+        var hayNoDash = product._searchIndexNoDash || '';
+
+        // 1. Direct exact or dash-free substring match
+        if (hay.indexOf(q) !== -1 || hayNoDash.indexOf(q) !== -1) {
+          return true;
+        }
+
+        var qNoDash = q.replace(/-/g, ' ');
+        if (hayNoDash.indexOf(qNoDash) !== -1) {
+          return true;
+        }
+
+        // 2. Tokenized match for multi-word queries (e.g. "toyota oil filter", "honda civic")
+        var words = q.split(/[\s,;/]+/).filter(Boolean);
+        if (words.length === 0) {
+          return false;
+        }
+
+        for (var i = 0; i < words.length; i++) {
+          var w = words[i].replace(/[^a-z0-9\-]/g, '');
+          if (!w) return false;
+          if (hay.indexOf(w) === -1 && hayNoDash.indexOf(w) === -1) {
+            return false;
+          }
+        }
+        return true;
       }
+
       function updatePaginationUI() {
         var total = currentMatching.length;
         if (total === 0) {
@@ -2151,7 +2178,6 @@
         visibleLimit = PAGE_SIZE;
         var query = search.value.trim();
         var range = priceFilter.value;
-        sortInventory();
         currentMatching = [];
         products.forEach(function (product) {
           var categoryMatch = activeFilter === 'all' || product.dataset.type === activeFilter;
@@ -2166,9 +2192,21 @@
         updatePaginationUI();
         var visible = currentMatching.length;
         count.textContent = visible + (visible === 1 ? ' product' : ' products');
-        var categoryName = activeFilter === 'all' ? 'all inventory' : ({ oilfilter: 'oil filters', airac: 'air & AC filters', fuelfilter: 'fuel filters', transoil: 'transmission oils', brakecool: 'brake oils & coolants', carcare: 'cleaners & car care' }[activeFilter]);
+        var categoryName = activeFilter === 'all' ? 'all inventory' : ({ oilfilter: 'oil filters', airac: 'air & AC filters', fuelfilter: 'fuel filters', transoil: 'transmission oils', brakecool: 'brake oils & coolants', carcare: 'cleaners & car care' }[activeFilter] || activeFilter);
         activeLabel.textContent = query || range !== 'all' ? 'Filtered ' + categoryName : 'Showing ' + categoryName;
-        empty.textContent = 'No products match those filters. Try another keyword, price range or category.';
+        if (visible === 0) {
+          empty.innerHTML = 'No products match those filters.<br><button type="button" class="btn btn-outline" style="margin-top:12px;padding:6px 16px;cursor:pointer;" id="reset-search-btn">Clear all filters</button>';
+          var resetBtn = document.getElementById('reset-search-btn');
+          if (resetBtn) {
+            resetBtn.onclick = function() {
+              search.value = '';
+              priceFilter.value = 'all';
+              sortProducts.value = 'featured';
+              setFilter('all');
+              search.focus();
+            };
+          }
+        }
         empty.classList.toggle('visible', visible === 0);
       }
 
@@ -2189,8 +2227,14 @@
         button.addEventListener('click', function () { setFilter(button.getAttribute('data-filter')); });
       });
       search.addEventListener('input', applyFilters);
+      search.addEventListener('search', applyFilters);
+      search.addEventListener('keyup', applyFilters);
+      search.addEventListener('change', applyFilters);
       priceFilter.addEventListener('change', applyFilters);
-      sortProducts.addEventListener('change', applyFilters);
+      sortProducts.addEventListener('change', function () {
+        sortInventory();
+        applyFilters();
+      });
       clearFilters.addEventListener('click', function () {
         search.value = '';
         priceFilter.value = 'all';
@@ -2223,15 +2267,32 @@
         var detailButton = product.querySelector('.btn-detail');
         var item = {
           id: id,
-          name: detailButton.dataset.name,
-          image: detailButton.dataset.image,
-          alt: detailButton.dataset.alt,
+          name: detailButton ? detailButton.dataset.name : '',
+          image: detailButton ? detailButton.dataset.image : '',
+          alt: detailButton ? detailButton.dataset.alt : '',
           price: Number(product.dataset.price),
-          priceLabel: detailButton.dataset.price,
+          priceLabel: detailButton ? detailButton.dataset.price : '',
           product: product
         };
         catalog[id] = item;
         product.dataset.productId = id;
+
+        // Build comprehensive search index
+        var specsText = '';
+        product.querySelectorAll('.product-specs strong, .product-specs span').forEach(function (el) {
+          specsText += ' ' + el.textContent;
+        });
+        var detailSpecs = detailButton ? (
+          (detailButton.dataset.name || '') + ' ' +
+          (detailButton.dataset.specification || '') + ' ' +
+          (detailButton.dataset.suitable || '') + ' ' +
+          (detailButton.dataset.category || '')
+        ) : '';
+        var rawSearch = (product.dataset.search || '');
+        var fullSearchText = (id + ' ' + (item.name || '') + ' ' + specsText + ' ' + detailSpecs + ' ' + rawSearch + ' ' + (product.dataset.price || '')).toLowerCase();
+
+        product._searchIndex = fullSearchText;
+        product._searchIndexNoDash = fullSearchText.replace(/-/g, ' ');
 
         var favoriteButton = document.createElement('button');
         favoriteButton.className = 'favorite-button';
@@ -2262,6 +2323,10 @@
         });
       });
 
+      // Initial filter & sort run
+      sortInventory();
+      applyFilters();
+
       /* Featured hero card: click opens the featured product's detail dialog */
       var heroCard = document.querySelector('.hero-card');
       if (heroCard && catalog['JS-TO-07']) {
@@ -2285,7 +2350,7 @@
           var brand = tile.getAttribute('data-brand') || '';
           setFilter('all');
           search.value = brand;
-          search.dispatchEvent(new Event('input', { bubbles: true }));
+          applyFilters();
           document.getElementById('inventory').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       });
