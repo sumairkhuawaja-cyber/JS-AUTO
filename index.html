@@ -2126,29 +2126,33 @@
         var q = query.trim().toLowerCase();
         if (!q) return true;
 
+        // If the query contains NO alphanumeric characters at all (e.g. "/", "...../", "???", "---"),
+        // it cannot match any product in the catalog
+        if (!/[a-z0-9]/i.test(q)) {
+          return false;
+        }
+
         var hay = product._searchIndex || '';
-        var hayNoDash = product._searchIndexNoDash || '';
+        var hayClean = product._searchIndexClean || '';
 
-        // 1. Direct exact or dash-free substring match
-        if (hay.indexOf(q) !== -1 || hayNoDash.indexOf(q) !== -1) {
-          return true;
-        }
-
-        var qNoDash = q.replace(/-/g, ' ');
-        if (hayNoDash.indexOf(qNoDash) !== -1) {
-          return true;
-        }
-
-        // 2. Tokenized match for multi-word queries (e.g. "toyota oil filter", "honda civic")
-        var words = q.split(/[\s,;/]+/).filter(Boolean);
+        // Extract alphanumeric + hyphen tokens
+        var qClean = q.replace(/[^a-z0-9\-]/g, ' ').trim();
+        var words = qClean.split(/\s+/).filter(Boolean);
         if (words.length === 0) {
           return false;
         }
 
+        // 1. Direct multi-word phrase match
+        var qPhrase = words.join(' ');
+        if (hay.indexOf(qPhrase) !== -1 || hayClean.indexOf(qPhrase) !== -1) {
+          return true;
+        }
+
+        // 2. Tokenized match: every word must exist in the search index
         for (var i = 0; i < words.length; i++) {
-          var w = words[i].replace(/[^a-z0-9\-]/g, '');
-          if (!w) return false;
-          if (hay.indexOf(w) === -1 && hayNoDash.indexOf(w) === -1) {
+          var w = words[i];
+          var wNoDash = w.replace(/-/g, ' ');
+          if (hay.indexOf(w) === -1 && hayClean.indexOf(w) === -1 && hayClean.indexOf(wNoDash) === -1) {
             return false;
           }
         }
@@ -2290,9 +2294,10 @@
         ) : '';
         var rawSearch = (product.dataset.search || '');
         var fullSearchText = (id + ' ' + (item.name || '') + ' ' + specsText + ' ' + detailSpecs + ' ' + rawSearch + ' ' + (product.dataset.price || '')).toLowerCase();
+        var cleanedText = fullSearchText.replace(/[^a-z0-9\-]/g, ' ').replace(/\s+/g, ' ').trim();
 
-        product._searchIndex = fullSearchText;
-        product._searchIndexNoDash = fullSearchText.replace(/-/g, ' ');
+        product._searchIndex = cleanedText;
+        product._searchIndexClean = cleanedText.replace(/-/g, ' ');
 
         var favoriteButton = document.createElement('button');
         favoriteButton.className = 'favorite-button';
