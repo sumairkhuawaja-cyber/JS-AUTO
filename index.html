@@ -310,7 +310,11 @@
     .filter:hover { border-color: var(--accent); color: var(--accent); }
     .filter.active, .filter[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px var(--accent-glow); }
 
-    .result-meta { display: flex; justify-content: space-between; gap: 16px; margin: 22px 2px 14px; color: var(--muted); font-weight: 700; font-size: .95rem; }
+    .result-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 22px 2px 14px; color: var(--muted); font-weight: 700; font-size: .95rem; }
+    .result-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .result-controls .filter-select { width: auto; height: 40px; font-size: .88rem; }
+    .result-controls .clear-filters { height: 40px; padding: 0 16px; font-size: .85rem; }
+    .vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
     /* ---- Product grid & cards ---- */
     .inventory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
@@ -402,6 +406,10 @@
     .empty-state.visible { display: block; }
     .load-more-wrap { margin-top: 32px; text-align: center; }
     .btn-load-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
       min-height: 52px;
       padding: 12px 30px;
       border: 2px solid var(--accent);
@@ -726,7 +734,10 @@
       .filterbar::-webkit-scrollbar { display: none; }
       .filterbar-label { flex: 0 0 auto; }
       .filter { flex: 0 0 auto; }
-      .result-meta { flex-direction: column; gap: 2px; }
+      .result-meta { flex-direction: column; align-items: stretch; gap: 8px; }
+      .result-controls { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+      .result-controls .filter-select { width: 100%; }
+      .result-controls .clear-filters { grid-column: 1 / -1; width: 100%; }
       .dialog-card { grid-template-columns: 1fr; }
       .dialog-media { padding: 22px; }
       .dialog-media img { max-height: 240px; }
@@ -910,6 +921,7 @@
       <nav class="navlinks" aria-label="Primary navigation">
         <a href="#brands">Brands</a>
         <a href="#categories">Categories</a>
+        <a href="#inventory" data-show-all>Products</a>
         <a href="#contact">Contact Us</a>
       </nav>
       <div class="header-actions">
@@ -949,16 +961,11 @@
           </div>
         </div>
 
-        <div class="inventory-tools" aria-label="Inventory filters">
-          <div class="control-group">
-            <label class="control-label" for="inventory-search">Search products</label>
-            <div class="searchbox">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              <input id="inventory-search" type="search" placeholder="Name, model, grade or use" />
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="price-filter">Price range</label>
+        <input type="hidden" id="inventory-search" value="" />
+        <div class="result-meta" aria-live="polite">
+          <span id="result-count">53 products</span>
+          <div class="result-controls">
+            <label class="vh" for="price-filter">Price range</label>
             <select class="filter-select" id="price-filter">
               <option value="all">Any price</option>
               <option value="under-1000">Under PKR 1,000</option>
@@ -966,29 +973,17 @@
               <option value="5000-10000">PKR 5,000–10,000</option>
               <option value="over-10000">PKR 10,000 and above</option>
             </select>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="sort-products">Sort by</label>
+            <label class="vh" for="sort-products">Sort by</label>
             <select class="filter-select" id="sort-products">
               <option value="featured">Featured</option>
               <option value="price-low">Price: low to high</option>
               <option value="price-high">Price: high to low</option>
               <option value="rating">Highest rated</option>
             </select>
+            <button class="clear-filters" id="clear-filters" type="button">Clear filters</button>
           </div>
-          <button class="clear-filters" id="clear-filters" type="button">Clear filters</button>
+          <span id="active-filter-label">Showing all inventory</span>
         </div>
-        <div class="filterbar" aria-label="Filter by category">
-          <span class="filterbar-label">Shop by category</span>
-          <button class="filter" type="button" aria-pressed="true" data-filter="all">All</button>
-          <button class="filter" type="button" aria-pressed="false" data-filter="oilfilter">Oil Filters</button>
-          <button class="filter" type="button" aria-pressed="false" data-filter="airac">Air & AC Filters</button>
-          <button class="filter" type="button" aria-pressed="false" data-filter="fuelfilter">Fuel Filters</button>
-          <button class="filter" type="button" aria-pressed="false" data-filter="transoil">Transmission Oils</button>
-          <button class="filter" type="button" aria-pressed="false" data-filter="brakecool">Brake Oils & Coolants</button>
-          <button class="filter" type="button" aria-pressed="false" data-filter="carcare">Cleaners & Car Care</button>
-        </div>
-        <div class="result-meta" aria-live="polite"><span id="result-count">53 products</span><span id="active-filter-label">Showing all inventory</span></div>
 
         <div class="inventory">
           <article class="product" data-id="JS-OF-01" data-sku="JS-OF-01" data-type="oilfilter" data-category="Oil Filters" data-price="750" data-rating="4.7" data-order="1" data-desc="High-efficiency spin-on oil filter. Best for: Honda cars &amp; SUVs. In stock." data-search="honda oil filter engine spin-on">
@@ -1471,13 +1466,13 @@
         </div>
         <div id="empty-state" class="empty-state">No products match that search. Try another keyword or category.</div>
         <div id="load-more-wrap" class="load-more-wrap">
-          <button type="button" class="btn btn-load-more" id="load-more-btn">
+          <a href="products.html" class="btn btn-load-more" id="load-more-btn">
             <svg viewBox="0 0 24 24" fill="none" class="load-more-icon" aria-hidden="true">
               <path d="M12 4v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Load More Products</span>
-          </button>
-          <p class="load-more-count" id="load-more-count">Showing 8 of 53 products</p>
+          </a>
+          <p class="load-more-count" id="load-more-count">Showing 4 of 53 products</p>
         </div>
       </div>
     </section>
@@ -1698,6 +1693,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Categories</span>
       </a>
+      <a class="mobile-nav-link" href="#inventory" data-show-all>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Products</span>
+      </a>
       <a class="mobile-nav-link" href="#services">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         <span>Our Services</span>
@@ -1726,7 +1725,7 @@
       var loadMoreBtn = document.getElementById('load-more-btn');
       var loadMoreWrap = document.getElementById('load-more-wrap');
       var loadMoreCount = document.getElementById('load-more-count');
-      var PAGE_SIZE = 8;
+      var PAGE_SIZE = 4;
       var visibleLimit = PAGE_SIZE;
       var currentMatching = [];
       var activeFilter = 'all';
@@ -1837,12 +1836,7 @@
         empty.classList.toggle('visible', visible === 0);
       }
 
-      if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function () {
-          visibleLimit += PAGE_SIZE;
-          updatePaginationUI();
-        });
-      }
+      // Load-more is now a link to the full catalog page (products.html); no in-page reveal.
 
       function setFilter(type) {
         activeFilter = type;
@@ -1918,6 +1912,16 @@
         sortProducts.value = 'featured';
         setFilter('all');
         search.focus();
+      });
+
+      // Header "Products" links: reset every filter, show the whole catalog, jump to it
+      document.querySelectorAll('[data-show-all]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (clearFilters) clearFilters.click();
+          var inv = document.getElementById('inventory');
+          if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
       });
 
       // Storage
