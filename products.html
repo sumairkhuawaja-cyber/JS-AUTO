@@ -1800,14 +1800,14 @@
         });
       });
 
-      search.addEventListener('input', applyFilters);
-      priceFilter.addEventListener('change', applyFilters);
-      sortProducts.addEventListener('change', function () {
+      if (search) search.addEventListener('input', applyFilters);
+      if (priceFilter) priceFilter.addEventListener('change', applyFilters);
+      if (sortProducts) sortProducts.addEventListener('change', function () {
         sortInventory();
         applyFilters();
       });
 
-      clearFilters.addEventListener('click', function () {
+      if (clearFilters) clearFilters.addEventListener('click', function () {
         search.value = '';
         if (headerSearchInput) headerSearchInput.value = '';
         priceFilter.value = 'all';
