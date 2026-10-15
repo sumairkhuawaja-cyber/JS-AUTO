@@ -597,6 +597,28 @@
     .dialog-close:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
     .dialog-media { display: grid; place-items: center; padding: 32px; background: var(--surface-2); }
     .dialog-media img { width: 100%; max-height: 420px; object-fit: contain; }
+    .d-carousel { position: relative; width: 100%; }
+    .d-carousel-viewport { overflow: hidden; border-radius: var(--radius-sm); }
+    .d-carousel-track { display: flex; transition: transform .35s ease; }
+    .d-carousel-slide { flex: 0 0 100%; min-width: 0; display: grid; place-items: center; }
+    .d-carousel-slide img { width: 100%; max-height: 420px; object-fit: contain; }
+    .d-carousel-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--line); background: rgba(255,255,255,.94);
+      color: var(--ink); display: grid; place-items: center; cursor: pointer;
+      box-shadow: 0 2px 10px rgba(10,24,44,.12);
+      transition: background .18s, transform .18s;
+    }
+    .d-carousel-arrow:hover { background: #fff; transform: translateY(-50%) scale(1.07); }
+    .d-carousel-arrow svg { width: 18px; height: 18px; }
+    .d-carousel-prev { left: 8px; }
+    .d-carousel-next { right: 8px; }
+    .d-carousel-dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; justify-content: center; gap: 6px; }
+    .d-carousel-dot { width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0; background: rgba(10,25,56,.25); cursor: pointer; transition: background .18s, transform .18s; }
+    .d-carousel-dot.active { background: var(--accent); transform: scale(1.2); }
+    .d-carousel.single .d-carousel-arrow, .d-carousel.single .d-carousel-dots { display: none; }
+    @media (prefers-reduced-motion: reduce) { .d-carousel-track { transition: none; } }
     .dialog-body { display: flex; flex-direction: column; gap: 14px; padding: 32px 28px; }
     .dialog-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .8rem; font-weight: 700; color: var(--muted); }
     .dialog-meta .badge { padding: 4px 10px; border-radius: 999px; background: var(--accent); color: #fff; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; }
@@ -741,6 +763,8 @@
       .dialog-card { grid-template-columns: 1fr; }
       .dialog-media { padding: 22px; }
       .dialog-media img { max-height: 240px; }
+      .d-carousel-slide img { max-height: 240px; }
+      .d-carousel-arrow { width: 34px; height: 34px; }
       .dialog-body { padding: 22px 20px 24px; }
       .brand-tile { flex-basis: 140px; height: 96px; }
       .category-item { flex-basis: 200px; min-height: 100px; }
@@ -1643,7 +1667,16 @@
   <dialog class="product-dialog" id="product-dialog">
     <div class="dialog-card">
       <button class="dialog-close" id="dialog-close" type="button" aria-label="Close product details">&times;</button>
-      <div class="dialog-media"><img id="d-image" src="" alt="Product image" /></div>
+      <div class="dialog-media">
+        <div class="d-carousel" id="d-carousel">
+          <div class="d-carousel-viewport">
+            <div class="d-carousel-track" id="d-carousel-track"></div>
+          </div>
+          <button class="d-carousel-arrow d-carousel-prev" id="d-carousel-prev" type="button" aria-label="Previous image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <button class="d-carousel-arrow d-carousel-next" id="d-carousel-next" type="button" aria-label="Next image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <div class="d-carousel-dots" id="d-carousel-dots"></div>
+        </div>
+      </div>
       <div class="dialog-body">
         <div class="dialog-meta"><span class="badge" id="d-category">Category</span><span class="sku" id="d-sku">SKU</span><span class="rating" id="d-rating">Rating</span></div>
         <h2 id="d-title">Title</h2>
@@ -1878,6 +1911,12 @@
           price: price,
           priceDisplay: product.querySelector('.price').textContent.trim(),
           image: img ? img.src : '',
+          images: (function () {
+            var list = img && img.src ? [img.src] : [];
+            var extra = (product.dataset.images || '').split('|');
+            extra.forEach(function (u) { var s = u.trim(); if (s) list.push(s); });
+            return list;
+          })(),
           sku: sku,
           rating: product.dataset.rating,
           description: product.dataset.desc || '',
@@ -2085,13 +2124,74 @@
       var dialogClose = document.getElementById('dialog-close');
       var dialogAddCart = document.getElementById('d-add-cart');
 
+      // Dialog image carousel (supports multiple images per product; ready for more photos later)
+      var dCarousel = document.getElementById('d-carousel');
+      var dTrack = document.getElementById('d-carousel-track');
+      var dDots = document.getElementById('d-carousel-dots');
+      var dPrev = document.getElementById('d-carousel-prev');
+      var dNext = document.getElementById('d-carousel-next');
+      var dImages = [];
+      var dIndex = 0;
+
+      function dRenderCarousel() {
+        if (!dTrack) return;
+        dTrack.style.transform = 'translateX(-' + (dIndex * 100) + '%)';
+        Array.prototype.forEach.call(dDots.children, function (dot, i) {
+          dot.classList.toggle('active', i === dIndex);
+        });
+      }
+
+      function dGoTo(i) {
+        if (!dImages.length) return;
+        dIndex = (i + dImages.length) % dImages.length;
+        dRenderCarousel();
+      }
+
+      function dBuildCarousel(images, alt) {
+        dImages = images && images.length ? images : [];
+        dIndex = 0;
+        dTrack.innerHTML = '';
+        dDots.innerHTML = '';
+        dImages.forEach(function (src, i) {
+          var slide = document.createElement('div');
+          slide.className = 'd-carousel-slide';
+          var im = document.createElement('img');
+          im.src = src;
+          im.alt = alt || 'Product image';
+          slide.appendChild(im);
+          dTrack.appendChild(slide);
+          var dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'd-carousel-dot' + (i === 0 ? ' active' : '');
+          dot.setAttribute('aria-label', 'Go to image ' + (i + 1));
+          dot.addEventListener('click', function () { dGoTo(i); });
+          dDots.appendChild(dot);
+        });
+        dCarousel.classList.toggle('single', dImages.length < 2);
+        dRenderCarousel();
+      }
+
+      if (dPrev) dPrev.addEventListener('click', function (e) { e.stopPropagation(); dGoTo(dIndex - 1); });
+      if (dNext) dNext.addEventListener('click', function (e) { e.stopPropagation(); dGoTo(dIndex + 1); });
+      if (dTrack) {
+        var touchX = null;
+        dTrack.addEventListener('touchstart', function (e) {
+          touchX = e.touches[0].clientX;
+        }, { passive: true });
+        dTrack.addEventListener('touchend', function (e) {
+          if (touchX === null) return;
+          var dx = e.changedTouches[0].clientX - touchX;
+          if (Math.abs(dx) > 40) dGoTo(dIndex + (dx < 0 ? 1 : -1));
+          touchX = null;
+        }, { passive: true });
+      }
+
       function openProductModal(id) {
         var item = catalog[id];
         if (!item || !dialog) return;
         currentProductId = id;
 
-        document.getElementById('d-image').src = item.image;
-        document.getElementById('d-image').alt = item.name;
+        dBuildCarousel(item.images && item.images.length ? item.images : [item.image], item.name);
         document.getElementById('d-category').textContent = item.category;
         document.getElementById('d-sku').textContent = item.sku;
         document.getElementById('d-rating').textContent = '★ ' + item.rating;
