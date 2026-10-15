@@ -617,7 +617,6 @@
     .d-carousel-dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; justify-content: center; gap: 6px; }
     .d-carousel-dot { width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0; background: rgba(10,25,56,.25); cursor: pointer; transition: background .18s, transform .18s; }
     .d-carousel-dot.active { background: var(--accent); transform: scale(1.2); }
-    .d-carousel.single .d-carousel-arrow, .d-carousel.single .d-carousel-dots { display: none; }
     @media (prefers-reduced-motion: reduce) { .d-carousel-track { transition: none; } }
     .dialog-body { display: flex; flex-direction: column; gap: 14px; padding: 32px 28px; }
     .dialog-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .8rem; font-weight: 700; color: var(--muted); }
@@ -2167,7 +2166,6 @@
           dot.addEventListener('click', function () { dGoTo(i); });
           dDots.appendChild(dot);
         });
-        dCarousel.classList.toggle('single', dImages.length < 2);
         dRenderCarousel();
       }
 
