@@ -507,9 +507,6 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
-      padding: 0 1px 1px;
-      background: var(--navy-2);
-      border-radius: var(--radius-md);
     }
     .feature {
       display: flex;
@@ -517,8 +514,14 @@
       gap: 6px;
       padding: 24px 20px 26px;
       border-top: 3px solid var(--accent);
-      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      border-radius: var(--radius-md);
       background: #fff;
+      box-shadow: var(--card-shadow);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .feature:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--card-hover-shadow);
     }
     .feature-num { color: var(--accent); font-family: var(--head-font); font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 8px; }
     .feature strong { font-family: var(--head-font); font-size: 1.4rem; line-height: 1.05; letter-spacing: -.01em; }
@@ -597,8 +600,8 @@
     .dialog-desc { margin: 0; color: var(--muted); }
     .dialog-specs { display: flex; flex-wrap: wrap; gap: 8px; }
     .spec-pill { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); font-size: .82rem; }
-    .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
-    .dialog-actions .btn { flex: 1 1 160px; }
+    .dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+    .dialog-actions .btn { min-width: 0; }
 
     /* ---- Cart drawer ---- */
     .drawer-backdrop, .mobile-nav-backdrop {
@@ -765,22 +768,114 @@
     .contact-actions .btn-call-icon { background: var(--navy); box-shadow: 0 6px 16px rgba(10, 25, 56, .28); }
     .contact-actions .btn-call-icon:hover { background: var(--blue); }
 
-    /* ---- Store Information (white band to match the site theme) ---- */
-    .store-info-section { background: #fff; }
-    .store-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .store-info-box {
-      padding: 18px 20px;
+    /* ---- Store Information: compact white catalog card (matches Contact) ---- */
+    .glance-card {
+      max-width: 700px;
+      padding: 24px;
       background: #fff;
       border: 1px solid var(--line-soft);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       box-shadow: var(--card-shadow);
     }
-    .store-info-box strong { display: block; font-size: 1.02rem; line-height: 1.4; }
-    .store-info-sub { display: block; margin-top: 2px; color: var(--muted); font-size: .9rem; }
-    .store-info-wide { grid-column: 1 / -1; }
-    .store-info-actions { margin-top: 22px; }
+    .glance-card .section-title { font-size: 1.5rem; }
+    .glance-sub { margin: 8px 0 14px; color: var(--muted); font-size: .92rem; }
+    .glance-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-soft); }
+    .glance-list li {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: .88rem; font-weight: 700;
+    }
+    .glance-list strong { color: var(--green-deep); font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .glance-rating { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 14px; }
+    .glance-score { color: var(--gold); font-family: var(--head-font); font-size: 1.4rem; font-weight: 800; line-height: 1; }
+    .glance-rating strong { display: block; margin-top: 4px; font-size: .95rem; }
+    .glance-rating p { margin: 0; max-width: 320px; color: var(--muted); font-size: .88rem; text-align: right; }
     @media (max-width: 600px) {
-      .store-info-grid { grid-template-columns: 1fr; }
+      .glance-card { padding: 20px; }
+      .glance-rating { flex-direction: column; align-items: flex-start; }
+      .glance-rating p { text-align: left; }
+    }
+
+    /* ---- Footer ---- */
+    .site-footer { background: var(--navy); color: #fff; }
+    .footer-main {
+      display: grid; grid-template-columns: 1.2fr 1fr 1.2fr 1.2fr; gap: 32px;
+      padding-top: 48px; padding-bottom: 40px;
+    }
+    .footer-column h3 { color: #fff; font-size: 1.35rem; margin: 0 0 14px; }
+    .footer-brand p, .footer-order p { color: #a9bdd8; font-size: .92rem; margin: 0; }
+    .footer-order p { margin-bottom: 16px; }
+    .footer-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .footer-links a { color: #dbe4f0; font-size: .92rem; }
+    .footer-links a:hover { color: #fff; text-decoration: underline; }
+    .footer-contact-line { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; color: #dbe4f0; font-size: .92rem; line-height: 1.45; }
+    .footer-contact-line svg { width: 18px; height: 18px; flex: none; color: var(--accent); margin-top: 2px; }
+    .footer-contact-line a { color: #fff; font-weight: 700; }
+    .btn-wa-footer {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; min-height: 48px; padding: 12px 20px;
+      background: var(--green); color: #fff; font-weight: 800; font-size: .95rem;
+      border-radius: 8px; box-shadow: 0 6px 16px rgba(37, 211, 102, .35);
+      transition: background .18s;
+    }
+    .btn-wa-footer:hover { background: var(--green-deep); }
+    .btn-wa-footer svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
+    .footer-bottom { border-top: 1px solid rgba(255, 255, 255, .12); padding: 16px 0; color: #8fa3bd; font-size: .85rem; }
+    @media (max-width: 900px) {
+      .footer-main { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .footer-main { grid-template-columns: 1fr; gap: 24px; padding-top: 36px; padding-bottom: 32px; }
+    }
+
+    /* ---- Floating WhatsApp button ---- */
+    .wa-fab {
+      position: fixed;
+      z-index: 90;
+      right: 22px;
+      bottom: calc(22px + env(safe-area-inset-bottom));
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .28);
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      transition: opacity .24s ease, transform .24s ease, visibility 0s linear 0s, background .18s ease;
+    }
+    .wa-fab:hover { background: var(--green-deep); transform: translateY(0) scale(1.1); box-shadow: 0 16px 38px rgba(0, 0, 0, .34); }
+    .wa-fab svg { width: 30px; height: 30px; fill: currentColor; }
+    .wa-fab.is-footer-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(14px) scale(.9);
+      transition: opacity .24s ease, transform .24s ease, visibility 0s linear .24s;
+    }
+    @media (max-width: 600px) {
+      .wa-fab { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); width: 54px; height: 54px; }
+      .wa-fab svg { width: 28px; height: 28px; }
+    }
+    .wa-fab::before, .wa-fab::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--green);
+      z-index: -1;
+      animation: wa-ping 2.4s ease-out infinite;
+      pointer-events: none;
+    }
+    .wa-fab::after { animation-delay: 1.2s; }
+    @keyframes wa-ping {
+      0% { transform: scale(1); opacity: .5; }
+      80%, 100% { transform: scale(1.7); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .wa-fab::before, .wa-fab::after { animation: none; display: none; }
     }
 
   </style>
@@ -1493,39 +1588,61 @@
     <div class="section-separator" id="store-info-separator" aria-hidden="true"></div>
     <section class="section store-info-section" id="store-info" aria-labelledby="store-info-title">
       <div class="wrap">
-        <div class="section-head-simple">
+        <div class="glance-card">
           <div class="eyebrow">Store Information</div>
-          <h2 id="store-info-title" class="section-title">Know the store before you visit.</h2>
-        </div>
-        <div class="store-info-grid">
-          <div class="store-info-box">
-            <span class="contact-kicker">Store</span>
-            <strong>JS Auto</strong>
-            <span class="store-info-sub">All car solutions under one roof</span>
+          <h2 id="store-info-title" class="section-title">Current catalog at a glance.</h2>
+          <p class="glance-sub">Every category below matches the inventory currently shown on this page.</p>
+          <ul class="glance-list">
+            <li><span>Oil Filters</span><strong>6 listed</strong></li>
+            <li><span>Air &amp; AC Filters</span><strong>14 listed</strong></li>
+            <li><span>Fuel Filters</span><strong>4 listed</strong></li>
+            <li><span>Transmission Oils</span><strong>14 listed</strong></li>
+            <li><span>Brake Oils &amp; Coolants</span><strong>7 listed</strong></li>
+            <li><span>Cleaners &amp; Car Care</span><strong>8 listed</strong></li>
+            <li><span>Auto Decoration</span><strong>Coming soon</strong></li>
+          </ul>
+          <div class="glance-rating">
+            <div><div class="glance-score">★ 4.9 / 5</div><strong>Store rating</strong></div>
+            <p>Trusted by local drivers for products, guidance and direct service.</p>
           </div>
-          <div class="store-info-box">
-            <span class="contact-kicker">Address</span>
-            <strong>Opposite Bahria Phase 4 Gate, GT Rd, Rawalpindi</strong>
-          </div>
-          <div class="store-info-box">
-            <span class="contact-kicker">Opening Hours</span>
-            <strong>Open Daily &middot; Closes 9:00 PM</strong>
-          </div>
-          <div class="store-info-box">
-            <span class="contact-kicker">Phone &amp; WhatsApp</span>
-            <strong>0336-5804080</strong>
-          </div>
-          <div class="store-info-box store-info-wide">
-            <span class="contact-kicker">What we stock</span>
-            <strong>Oil filters, air &amp; AC filters, fuel filters, transmission oils, brake oils &amp; coolants, cleaners &amp; car care</strong>
-          </div>
-        </div>
-        <div class="store-info-actions">
-          <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&amp;query=Opposite+Bahria+Phase+4+Gate%2C+GT+Rd%2C+Rawalpindi" target="_blank" rel="noopener">Get directions</a>
         </div>
       </div>
     </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-main">
+      <div class="footer-column footer-brand">
+        <h3>JS Auto</h3>
+        <p>Your trusted automotive partner for filters, oils, coolants and car care in Rawalpindi.</p>
+      </div>
+      <div class="footer-column">
+        <h3>Store Categories</h3>
+        <ul class="footer-links">
+          <li><a href="#inventory" data-jump-filter="oilfilter">Oil Filters</a></li>
+          <li><a href="#inventory" data-jump-filter="airac">Air &amp; AC Filters</a></li>
+          <li><a href="#inventory" data-jump-filter="fuelfilter">Fuel Filters</a></li>
+          <li><a href="#inventory" data-jump-filter="transoil">Transmission Oils</a></li>
+          <li><a href="#inventory" data-jump-filter="brakecool">Brake Oils &amp; Coolants</a></li>
+          <li><a href="#inventory" data-jump-filter="carcare">Cleaners &amp; Car Care</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Location &amp; Contact</h3>
+        <div class="footer-contact-line"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg><span>Opposite Bahria Phase 4 Gate,<br />GT Rd, Rawalpindi</span></div>
+        <div class="footer-contact-line"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Open Daily &middot; Closes 9:00 PM</span></div>
+        <div class="footer-contact-line"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.2 3.5 4.8 5.1c-.8.5-1.1 1.5-.8 2.4 2 6.1 6.4 10.5 12.5 12.5.9.3 1.9 0 2.4-.8l1.6-2.4-4.1-2-1.3 1.8c-3.4-1.4-6.3-4.3-7.7-7.7l1.8-1.3-2-4.1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><a href="tel:+923365804080">0336-5804080</a></div>
+      </div>
+      <div class="footer-column footer-order">
+        <h3>Order via WhatsApp</h3>
+        <p>Ask about availability, pricing or the right fitment before you visit.</p>
+        <a class="btn-wa-footer" href="https://wa.me/923365804080?text=Hi%20JS%20Auto%2C%20I%27d%20like%20to%20place%20an%20order." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Order on WhatsApp</a>
+      </div>
+    </div>
+    <div class="footer-bottom"><div class="wrap">&copy; 2026 JS Auto. All rights reserved.</div></div>
+  </footer>
+
+  <a class="wa-fab" href="https://wa.me/923365804080?text=Hi%20JS%20Auto%2C%20I%27m%20interested%20in%20a%20product." target="_blank" rel="noopener" aria-label="Chat with JS Auto on WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
 
   <!-- Product Details Dialog -->
   <dialog class="product-dialog" id="product-dialog">
@@ -1540,7 +1657,7 @@
         <div class="dialog-specs" id="d-specs"></div>
         <div class="dialog-actions">
           <button class="btn btn-primary" id="d-add-cart" type="button">Add to cart</button>
-          <a class="btn btn-wa" id="d-wa-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>WhatsApp Deal</span></a>
+          <a class="btn btn-wa" id="d-wa-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp Deal</span></a>
         </div>
       </div>
     </div>
@@ -2134,7 +2251,7 @@
         });
       });
 
-      document.querySelectorAll('.category-track .category-item').forEach(function (item) {
+      document.querySelectorAll('.category-track .category-item, .footer-links a[data-jump-filter]').forEach(function (item) {
         item.addEventListener('click', function (e) {
           e.preventDefault();
           var targetType = item.dataset.jumpFilter;
@@ -2145,6 +2262,17 @@
           }
         });
       });
+
+      var waFab = document.querySelector('.wa-fab');
+      var footerOrder = document.querySelector('.footer-order');
+      if (waFab && footerOrder && 'IntersectionObserver' in window) {
+        var fabObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            waFab.classList.toggle('is-footer-hidden', entry.isIntersecting);
+          });
+        }, { threshold: 0.05 });
+        fabObserver.observe(footerOrder);
+      }
 
       updateCounts();
       renderCart();
