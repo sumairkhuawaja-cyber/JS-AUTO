@@ -945,7 +945,7 @@
       <nav class="navlinks" aria-label="Primary navigation">
         <a href="#brands">Brands</a>
         <a href="#categories">Categories</a>
-        <a href="#inventory" data-show-all>Products</a>
+        <a href="products.html">Products</a>
         <a href="#contact">Contact Us</a>
       </nav>
       <div class="header-actions">
@@ -1496,7 +1496,7 @@
             </svg>
             <span>Load More Products</span>
           </a>
-          <p class="load-more-count" id="load-more-count">Showing 4 of 53 products</p>
+          <p class="load-more-count" id="load-more-count">Showing 12 of 53 products</p>
         </div>
       </div>
     </section>
@@ -1703,7 +1703,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Categories</span>
       </a>
-      <a class="mobile-nav-link" href="#inventory" data-show-all>
+      <a class="mobile-nav-link" href="products.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         <span>Products</span>
       </a>
@@ -1735,7 +1735,7 @@
       var loadMoreBtn = document.getElementById('load-more-btn');
       var loadMoreWrap = document.getElementById('load-more-wrap');
       var loadMoreCount = document.getElementById('load-more-count');
-      var PAGE_SIZE = 4;
+      var PAGE_SIZE = 12;
       var visibleLimit = PAGE_SIZE;
       var currentMatching = [];
       var activeFilter = 'all';
