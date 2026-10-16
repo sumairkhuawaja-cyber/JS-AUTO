@@ -2087,6 +2087,16 @@
         });
       }
 
+      // Fix: pressing a suggestion with a mouse must not blur the search input.
+      // Without this, mousedown moves focus to the row button, the input's blur
+      // handler hides the dropdown 160ms later, and a normal (slower) click's
+      // mouseup lands after the rows are gone - so the click never opens the
+      // product. Keyboard Enter (synthetic click) and touch taps were never
+      // affected, and this keeps them working.
+      if (suggestBox) {
+        suggestBox.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      }
+
       if (headerSearchInput) {
         headerSearchInput.addEventListener('input', renderSuggest);
         headerSearchInput.addEventListener('blur', function () { setTimeout(closeSuggest, 160); });
