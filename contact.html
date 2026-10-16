@@ -210,7 +210,7 @@
       cursor: pointer;
       font-family: inherit;
     }
-    .suggest-item:hover { background: #f1f5fb; }
+    .suggest-item:hover, .suggest-item.active { background: #f1f5fb; }
     .suggest-item .s-type {
       margin-left: auto;
       font-size: .64rem;
@@ -292,6 +292,215 @@
     h1 { max-width: 720px; font-size: clamp(2.7rem, 5.2vw, 4.4rem); letter-spacing: -.03em; }
     .hero-copy > p { max-width: 580px; margin: 18px 0 26px; color: #e2eaf2; font-size: 1.14rem; line-height: 1.5; }
     .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .hero-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+    .hero-copy { max-width: 640px; }
+
+    /* ---- Hero hot-deals carousel ---- */
+    .hero-deals {
+      width: 100%;
+      max-width: 440px;
+      justify-self: end;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(420px 200px at 90% -10%, rgba(251, 146, 60, .22), transparent 70%),
+        radial-gradient(520px 280px at 8% 112%, rgba(225, 29, 72, .20), transparent 70%),
+        linear-gradient(160deg, rgba(32, 44, 88, .94), rgba(9, 15, 33, .97));
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 22px;
+      padding: 22px 22px 18px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #fff;
+    }
+    .hero-deals[hidden] { display: none; }
+    .hero-deals::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .10) 50%, transparent 58%);
+      transform: translateX(-130%);
+      animation: deal-shine 7s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes deal-shine {
+      0%, 55% { transform: translateX(-130%); }
+      100% { transform: translateX(130%); }
+    }
+    .deals-head {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: .02em;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .deals-flame {
+      font-size: 1.3rem;
+      display: inline-block;
+      filter: drop-shadow(0 0 8px rgba(251, 146, 60, .85));
+      animation: flame-flick 1.7s ease-in-out infinite;
+    }
+    @keyframes flame-flick {
+      0%, 100% { transform: scale(1) rotate(-5deg); }
+      50% { transform: scale(1.2) rotate(5deg); }
+    }
+    .deals-sub {
+      margin-left: auto;
+      font-size: .66rem;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: #fcd34d;
+      background: rgba(251, 191, 36, .14);
+      border: 1px solid rgba(251, 191, 36, .35);
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .deals-viewport { position: relative; overflow: hidden; border-radius: 16px; }
+    .deals-track { display: flex; transition: transform .55s cubic-bezier(.22, .9, .24, 1); }
+    .deal-slide {
+      flex: 0 0 100%;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 128px 1fr;
+      gap: 16px;
+      align-items: center;
+      background: linear-gradient(150deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .03));
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 196px;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .deal-slide:hover {
+      transform: translateY(-3px);
+      border-color: rgba(251, 191, 36, .45);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, .35);
+    }
+    .deal-media { position: relative; }
+    .deal-media img {
+      width: 128px;
+      height: 128px;
+      object-fit: cover;
+      border-radius: 14px;
+      background: #fff;
+      display: block;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .4);
+      transition: transform .35s ease;
+    }
+    .deal-slide:hover .deal-media img { transform: scale(1.05) rotate(-1deg); }
+    .deal-off {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: linear-gradient(135deg, #fb4d6d, #e11d48);
+      color: #fff;
+      font-size: .74rem;
+      font-weight: 900;
+      padding: 6px 11px;
+      border-radius: 999px;
+      box-shadow: 0 8px 20px rgba(225, 29, 72, .55);
+      border: 2px solid rgba(255, 255, 255, .85);
+      animation: off-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes off-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+    .deal-cat {
+      font-size: .66rem;
+      font-weight: 800;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      color: #93c5fd;
+      margin-bottom: 6px;
+    }
+    .deal-info h3 { font-size: 1.14rem; margin: 0 0 8px; color: #fff; letter-spacing: -.01em; }
+    .deal-pricing { display: flex; align-items: baseline; gap: 10px; margin-bottom: 13px; flex-wrap: wrap; }
+    .deal-pricing .old-price { color: #9fb0c7; font-size: .9rem; }
+    .deal-now {
+      font-size: 1.42rem;
+      font-weight: 900;
+      letter-spacing: -.01em;
+      background: linear-gradient(92deg, #fde68a, #f59e0b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .deal-cta {
+      padding: 10px 20px;
+      font-size: .86rem;
+      border: 0;
+      background: linear-gradient(135deg, #f43f5e, #dc2626);
+      box-shadow: 0 10px 26px rgba(225, 29, 72, .42);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .deal-cta:hover { transform: translateY(-2px); box-shadow: 0 15px 32px rgba(225, 29, 72, .6); }
+    .deals-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, .3);
+      background: rgba(8, 20, 44, .78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background .2s ease, transform .2s ease;
+      z-index: 2;
+    }
+    .deals-arrow:hover { background: rgba(36, 84, 220, .9); transform: translateY(-50%) scale(1.08); }
+    .deals-prev { left: 10px; }
+    .deals-next { right: 10px; }
+    .deals-dots { display: flex; justify-content: center; gap: 8px; margin-top: 15px; position: relative; }
+    .deals-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(255, 255, 255, .32);
+      cursor: pointer;
+      padding: 0;
+      transition: width .25s ease, background .25s ease;
+    }
+    .deals-dot.active { width: 28px; background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-deals::before, .deals-flame, .deal-off { animation: none; }
+      .deals-track { transition: none; }
+    }
+
+    /* ---- Discount price treatment (cards + dialog) ---- */
+    .old-price { text-decoration: line-through; color: #98a2b3; font-weight: 600; }
+    .price .old-price { font-size: .82em; margin-right: 6px; }
+    .deal-badge {
+      display: inline-block;
+      background: #e11d48;
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      margin-left: 6px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .dialog-pricing .deal-badge { font-size: .78rem; padding: 4px 12px; }
+    @media (max-width: 960px) {
+      .hero-layout { grid-template-columns: 1fr; gap: 36px; }
+      .hero-deals { justify-self: stretch; max-width: none; }
+    }
 
     /* ---- Sections ---- */
     .section { padding: 84px 0; }
@@ -1123,7 +1332,7 @@
       <div class="dialog-body">
         <div class="dialog-meta"><span class="badge" id="d-category">Category</span><span class="sku" id="d-sku">SKU</span><span class="rating" id="d-rating">Rating</span></div>
         <h2 id="d-title">Title</h2>
-        <div class="dialog-pricing"><div class="price" id="d-price">Price</div><span class="stock" id="d-stock">In stock &middot; ready to dispatch</span></div>
+        <div class="dialog-pricing"><div class="price" id="d-price">Price</div><span class="deal-badge" id="d-deal" hidden></span><span class="stock" id="d-stock">In stock &middot; ready to dispatch</span></div>
         <p class="dialog-desc" id="d-desc">Description</p>
         <div class="dialog-specs" id="d-specs"></div>
         <div class="dialog-actions">
@@ -1327,6 +1536,8 @@
         applyFilters();
       }
 
+      function fmtPKR(n) { return 'PKR ' + Number(n).toLocaleString('en-US'); }
+
       products.forEach(function (product, index) {
         var id = product.dataset.id;
         var specs = {};
@@ -1336,6 +1547,15 @@
         });
         var title = product.querySelector('h3').textContent.trim();
         var price = Number(product.dataset.price);
+        var oldPrice = Number(product.dataset.oldPrice || 0);
+        var discountPct = (oldPrice > price && oldPrice > 0) ? Math.round((oldPrice - price) / oldPrice * 100) : 0;
+        var priceEl = product.querySelector('.price');
+        var priceDisplay = priceEl ? priceEl.textContent.trim() : fmtPKR(price);
+        if (discountPct > 0 && priceEl) {
+          priceEl.innerHTML = '<span class="old-price">' + fmtPKR(oldPrice) + '</span> '
+            + '<span class="new-price">' + priceDisplay + '</span> '
+            + '<span class="deal-badge">-' + discountPct + '%</span>';
+        }
         var img = product.querySelector('.product-media img');
         var cat = product.dataset.category || product.dataset.type;
         var sku = product.dataset.sku || '';
@@ -1353,7 +1573,10 @@
           category: cat,
           categoryType: product.dataset.type,
           price: price,
-          priceDisplay: product.querySelector('.price').textContent.trim(),
+          priceDisplay: priceDisplay,
+          oldPrice: oldPrice,
+          oldPriceDisplay: discountPct > 0 ? fmtPKR(oldPrice) : '',
+          discountPct: discountPct,
           image: img ? img.src : '',
           images: (function () {
             var list = img && img.src ? [img.src] : [];
@@ -1639,7 +1862,15 @@
         document.getElementById('d-sku').textContent = item.sku;
         document.getElementById('d-rating').textContent = '★ ' + item.rating;
         document.getElementById('d-title').textContent = item.name;
-        document.getElementById('d-price').textContent = item.priceDisplay;
+        if (item.discountPct > 0) {
+          document.getElementById('d-price').innerHTML = '<span class="old-price">' + item.oldPriceDisplay + '</span> ' + item.priceDisplay;
+          var dDeal = document.getElementById('d-deal');
+          if (dDeal) { dDeal.textContent = '-' + item.discountPct + '%'; dDeal.hidden = false; }
+        } else {
+          document.getElementById('d-price').textContent = item.priceDisplay;
+          var dDeal2 = document.getElementById('d-deal');
+          if (dDeal2) dDeal2.hidden = true;
+        }
         document.getElementById('d-desc').textContent = item.description || 'Precision engineered OEM component verified for reliability and longevity.';
 
         var specsContainer = document.getElementById('d-specs');
@@ -1690,6 +1921,7 @@
       // Master Search in Header & Category Dropdown
       var headerCatSelect = document.getElementById('header-category-select');
       var headerSearchInput = document.getElementById('header-search-input');
+      var suggestActive = -1;
       var headerSearchBtn = document.getElementById('header-search-btn');
 
       if (headerCatSelect) {
@@ -1717,7 +1949,13 @@
         headerSearchInput.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') {
             e.preventDefault();
+            if (suggestBoxOpen() && activateSuggest(suggestActive)) return;
+            closeSuggest();
             triggerMasterSearch();
+          } else if (e.key === 'Escape') {
+            closeSuggest();
+          } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            if (moveSuggest(e.key === 'ArrowDown' ? 1 : -1)) e.preventDefault();
           }
         });
       }
@@ -1747,7 +1985,31 @@
         return out;
       })();
 
-      function closeSuggest() { if (suggestBox) suggestBox.hidden = true; }
+      function closeSuggest() { if (suggestBox) suggestBox.hidden = true; suggestActive = -1; }
+
+      function suggestBoxOpen() { return !!(suggestBox && !suggestBox.hidden); }
+
+      function moveSuggest(dir) {
+        if (!suggestBoxOpen()) return false;
+        var items = suggestBox.querySelectorAll('[data-suggest]');
+        if (!items.length) return false;
+        suggestActive = (suggestActive + dir + items.length) % items.length;
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].classList) items[i].classList.toggle('active', i === suggestActive);
+        }
+        var active = items[suggestActive];
+        if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+        return true;
+      }
+
+      function activateSuggest(idx) {
+        if (!suggestBoxOpen() || idx < 0) return false;
+        var items = suggestBox.querySelectorAll('[data-suggest]');
+        var item = items[idx];
+        if (!item) return false;
+        item.click();
+        return true;
+      }
 
       function escHtml(s) {
         return String(s).replace(/[&<>"']/g, function (c) {
@@ -1758,7 +2020,7 @@
       function renderSuggest() {
         if (!suggestBox || !headerSearchInput) return;
         var q = headerSearchInput.value.trim();
-        if (q.length < 2) { closeSuggest(); return; }
+        if (q.length < 1) { closeSuggest(); return; }
         var ql = q.toLowerCase();
         var scope = headerCatSelect ? headerCatSelect.value : 'all';
 
@@ -1798,6 +2060,7 @@
             + '</button>';
         }
         suggestProducts.innerHTML = prods || '<div class="suggest-empty">No products match</div>';
+        suggestActive = -1;
         suggestBox.hidden = false;
       }
 
@@ -1826,9 +2089,6 @@
 
       if (headerSearchInput) {
         headerSearchInput.addEventListener('input', renderSuggest);
-        headerSearchInput.addEventListener('keydown', function (e) {
-          if (e.key === 'Escape' || e.key === 'Enter') closeSuggest();
-        });
         headerSearchInput.addEventListener('blur', function () { setTimeout(closeSuggest, 160); });
         headerSearchInput.addEventListener('focus', renderSuggest);
       }
@@ -1836,6 +2096,84 @@
       document.addEventListener('click', function (e) {
         if (suggestBox && !suggestBox.hidden && !e.target.closest('.header-search-zone')) closeSuggest();
       });
+
+      // ---- Hero hot-deals carousel (auto-built from discounted products) ----
+      (function initDeals() {
+        var dealsBox = document.getElementById('hero-deals');
+        var track = document.getElementById('deals-track');
+        var dotsWrap = document.getElementById('deals-dots');
+        if (!dealsBox || !track || !dotsWrap || typeof catalog === 'undefined') return;
+        var deals = Object.keys(catalog).map(function (id) { return catalog[id]; })
+          .filter(function (c) { return c.discountPct > 0; })
+          .sort(function (a, b) { return b.discountPct - a.discountPct; })
+          .slice(0, 5);
+        if (!deals.length) return;
+        dealsBox.hidden = false;
+
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        }
+        deals.forEach(function (c, i) {
+          var slide = document.createElement('div');
+          slide.className = 'deal-slide';
+          slide.setAttribute('data-id', c.id);
+          slide.setAttribute('title', 'View ' + c.title);
+          slide.innerHTML =
+            '<div class="deal-media">' +
+              (c.image ? '<img src="' + esc(c.image) + '" alt="' + esc(c.title) + '" loading="lazy" />' : '') +
+              '<span class="deal-off">-' + c.discountPct + '%</span>' +
+            '</div>' +
+            '<div class="deal-info">' +
+              '<div class="deal-cat">' + esc(c.category) + '</div>' +
+              '<h3>' + esc(c.title) + '</h3>' +
+              '<div class="deal-pricing"><span class="old-price">' + esc(c.oldPriceDisplay) + '</span>' +
+              '<span class="deal-now">' + esc(c.priceDisplay) + '</span></div>' +
+              '<button type="button" class="btn btn-primary deal-cta" data-deal="' + esc(c.id) + '">View Deal</button>' +
+            '</div>';
+          track.appendChild(slide);
+          var dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'deals-dot' + (i === 0 ? ' active' : '');
+          dot.setAttribute('aria-label', 'Go to deal ' + (i + 1));
+          dot.addEventListener('click', function () { goTo(i); });
+          dotsWrap.appendChild(dot);
+        });
+
+        var idx = 0, paused = false, animating = false;
+        var dots = dotsWrap.querySelectorAll('.deals-dot');
+        function goTo(i) {
+          var n = (i + deals.length) % deals.length;
+          if (n === idx || animating) return;
+          animating = true;
+          idx = n;
+          track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+          for (var k = 0; k < dots.length; k++) {
+            if (dots[k].classList) dots[k].classList.toggle('active', k === idx);
+          }
+          setTimeout(function () { animating = false; }, 480);
+        }
+        // Single persistent auto-rotate timer; skips while paused so it can never get stuck.
+        setInterval(function () { if (!paused && deals.length > 1) goTo(idx + 1); }, 5500);
+        dealsBox.addEventListener('mouseenter', function () { paused = true; });
+        dealsBox.addEventListener('mouseleave', function () { paused = false; });
+        document.getElementById('deals-prev').addEventListener('click', function () { goTo(idx - 1); });
+        document.getElementById('deals-next').addEventListener('click', function () { goTo(idx + 1); });
+        // Whole slide (image included) opens the product quick-view.
+        dealsBox.addEventListener('click', function (e) {
+          if (e.target.closest('.deals-arrow') || e.target.closest('.deals-dot')) return;
+          var slide = e.target.closest('.deal-slide');
+          if (slide && typeof openProductModal === 'function') {
+            var id = slide.getAttribute('data-id');
+            if (id) openProductModal(id);
+          }
+        });
+        // Resume auto-rotate after the quick-view dialog closes.
+        if (typeof dialog !== 'undefined' && dialog && dialog.addEventListener) {
+          dialog.addEventListener('close', function () { paused = false; });
+        }
+      })();
 
       // Brands and Categories Carousel Navigation
       var brandTrack = document.getElementById('brand-track');
