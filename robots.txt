@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sumairkhuawaja-cyber.github.io/JS-AUTO/sitemap.xml
