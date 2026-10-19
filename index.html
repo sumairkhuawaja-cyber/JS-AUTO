@@ -571,6 +571,8 @@
       transition: border-color .18s, color .18s;
     }
     .clear-filters:hover { border-color: var(--accent); color: var(--accent); }
+    .clear-filters.has-filters { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .clear-filters.has-filters:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
     .filterbar {
       display: flex;
@@ -2032,7 +2034,6 @@
   <script>
 
     (function () {
-      var filters = Array.prototype.slice.call(document.querySelectorAll('.filter'));
       var products = Array.prototype.slice.call(document.querySelectorAll('.product'));
       var inventory = document.querySelector('.inventory');
       var search = document.getElementById('inventory-search');
@@ -2066,23 +2067,26 @@
 
       function sortInventory() {
         var mode = sortProducts.value;
-        var sorted = products.slice().sort(function (a, b) {
+        // Sort the products array in place (not a copy): applyFilters builds
+        // currentMatching by iterating this array, so pagination ("12 visible"
+        // on the main page) must follow the sorted order, not source order.
+        products.sort(function (a, b) {
           if (mode === 'price-low') return Number(a.dataset.price) - Number(b.dataset.price);
           if (mode === 'price-high') return Number(b.dataset.price) - Number(a.dataset.price);
           if (mode === 'rating') return Number(b.dataset.rating) - Number(a.dataset.rating) || Number(a.dataset.order) - Number(b.dataset.order);
           return Number(a.dataset.order) - Number(b.dataset.order);
         });
-        sorted.forEach(function (product) { inventory.appendChild(product); });
+        products.forEach(function (product) { inventory.appendChild(product); });
       }
 
-      function matchesSearch(product, query) {
+      function matchesHaystack(hay, query) {
         if (!query) return true;
         var q = query.trim().toLowerCase();
         if (!q) return true;
         if (!/[a-z0-9]/i.test(q)) return false;
 
-        var hay = product._searchIndex || '';
-        var hayClean = product._searchIndexClean || '';
+        hay = hay || '';
+        var hayClean = hay.replace(/[^a-z0-9]/g, ' ');
         var qClean = q.replace(/[^a-z0-9\-]/g, ' ').trim();
         var words = qClean.split(/\s+/).filter(Boolean);
         if (words.length === 0) return false;
@@ -2098,6 +2102,10 @@
           }
         }
         return true;
+      }
+
+      function matchesSearch(product, query) {
+        return matchesHaystack(product._searchIndex, query);
       }
 
       function updatePaginationUI() {
@@ -2148,22 +2156,23 @@
               if (headerSearchInput) headerSearchInput.value = '';
               priceFilter.value = 'all';
               sortProducts.value = 'featured';
+              sortInventory();
               setFilter('all');
               search.focus();
             };
           }
         }
         empty.classList.toggle('visible', visible === 0);
+        // Highlight the Clear button only when there is something to clear.
+        var hasActiveFilters = query !== '' || range !== 'all' || activeFilter !== 'all'
+          || (sortProducts && sortProducts.value !== 'featured');
+        if (clearFilters) clearFilters.classList.toggle('has-filters', hasActiveFilters);
       }
 
       // Load-more is now a link to the full catalog page (products.html); no in-page reveal.
 
       function setFilter(type) {
         activeFilter = type;
-        filters.forEach(function (btn) {
-          btn.classList.toggle('active', btn.dataset.filter === type);
-          btn.setAttribute('aria-pressed', btn.dataset.filter === type ? 'true' : 'false');
-        });
         if (headerCatSelect && headerCatSelect.value !== type) {
           headerCatSelect.value = type;
         }
@@ -2232,12 +2241,6 @@
         });
       });
 
-      filters.forEach(function (button) {
-        button.addEventListener('click', function () {
-          setFilter(button.dataset.filter);
-        });
-      });
-
       if (search) search.addEventListener('input', applyFilters);
       if (priceFilter) priceFilter.addEventListener('change', applyFilters);
       if (sortProducts) sortProducts.addEventListener('change', function () {
@@ -2250,6 +2253,7 @@
         if (headerSearchInput) headerSearchInput.value = '';
         priceFilter.value = 'all';
         sortProducts.value = 'featured';
+        sortInventory();
         setFilter('all');
         search.focus();
       });
@@ -2418,6 +2422,19 @@
       if (backdrop) backdrop.addEventListener('click', closeDrawerEl);
       document.querySelectorAll('.drawer-close').forEach(function (btn) {
         btn.addEventListener('click', closeDrawerEl);
+      });
+      // Keyboard: Escape closes any open drawer (cart / mobile nav), like native dialogs do.
+      // closeMobileMenu is declared later in this scope; function declarations are
+      // hoisted and this only runs on keypress, so it is safe to call here.
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (openDrawer) { closeDrawerEl(); return; }
+        var mnav = document.getElementById('mobile-nav-drawer');
+        if (mnav && mnav.classList.contains('is-open') && typeof closeMobileMenu === 'function') {
+          closeMobileMenu();
+          var mt = document.getElementById('mobile-menu-toggle');
+          if (mt) mt.focus();
+        }
       });
 
       // Product Details Modal
@@ -2678,18 +2695,31 @@
         suggestList.innerHTML = words || '<div class="suggest-empty">No suggestions</div>';
 
         var prods = '', pn = 0;
+        // Product pool: article cards when the page has an inventory (main/catalog),
+        // otherwise the compact SUGGEST_INDEX injected into contact.html.
+        var pool = [];
         var articles = document.querySelectorAll('#inventory .product');
-        for (var i = 0; i < articles.length && pn < 6; i++) {
-          var a = articles[i];
-          if (scope !== 'all' && a.dataset.type !== scope) continue;
-          if (!matchesSearch(a, q)) continue;
-          var c = catalog[a.dataset.id];
-          if (!c) continue;
+        if (articles.length) {
+          for (var ai = 0; ai < articles.length; ai++) {
+            var a = articles[ai];
+            var c = catalog[a.dataset.id];
+            if (!c) continue;
+            pool.push({ id: a.dataset.id, type: a.dataset.type, title: c.title,
+              priceDisplay: c.priceDisplay, image: c.image,
+              searchText: a._searchIndex || '' });
+          }
+        } else if (window.SUGGEST_INDEX) {
+          pool = window.SUGGEST_INDEX;
+        }
+        for (var pi = 0; pi < pool.length && pn < 6; pi++) {
+          var p = pool[pi];
+          if (scope !== 'all' && p.type !== scope) continue;
+          if (!matchesHaystack(p.searchText, q)) continue;
           pn++;
-          prods += '<button type="button" class="suggest-item suggest-product" data-suggest="product" data-value="' + escHtml(a.dataset.id) + '">'
-            + (c.image ? '<img src="' + escHtml(c.image) + '" alt="" loading="lazy" />' : '')
-            + '<span class="sp-name">' + escHtml(c.title) + '</span>'
-            + '<span class="sp-price">' + escHtml(c.priceDisplay) + '</span>'
+          prods += '<button type="button" class="suggest-item suggest-product" data-suggest="product" data-value="' + escHtml(p.id) + '">'
+            + (p.image ? '<img src="' + escHtml(p.image) + '" alt="" loading="lazy" />' : '')
+            + '<span class="sp-name">' + escHtml(p.title) + '</span>'
+            + '<span class="sp-price">' + escHtml(p.priceDisplay) + '</span>'
             + '</button>';
         }
         suggestProducts.innerHTML = prods || '<div class="suggest-empty">No products match</div>';
@@ -2704,19 +2734,32 @@
           var kind = item.getAttribute('data-suggest');
           closeSuggest();
           if (kind === 'product') {
-            openProductModal(item.getAttribute('data-value'));
+            var pid = item.getAttribute('data-value');
+            if (catalog[pid]) {
+              openProductModal(pid);
+            } else {
+              // No product data on this page (contact.html): open it on the catalog page.
+              location.href = 'products.html#qv-' + encodeURIComponent(pid);
+            }
             return;
           }
           var label = item.getAttribute('data-label');
-          if (kind === 'category' && headerCatSelect) {
+          var hasInventory = !!document.getElementById('inventory');
+          if (kind === 'category' && hasInventory && headerCatSelect) {
             headerCatSelect.value = item.getAttribute('data-value');
             setFilter(item.getAttribute('data-value'));
           }
           headerSearchInput.value = label;
-          search.value = label;
-          applyFilters();
-          var inv = document.getElementById('inventory');
-          if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (hasInventory && search) {
+            search.value = label;
+            applyFilters();
+            var inv = document.getElementById('inventory');
+            if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else if (!hasInventory) {
+            // contact.html: deep-link into the catalog page instead (nothing to filter here).
+            if (kind === 'category') location.href = 'products.html#filter-' + encodeURIComponent(item.getAttribute('data-value'));
+            else location.href = 'products.html#search-' + encodeURIComponent(label);
+          }
         });
       }
 
@@ -2918,6 +2961,26 @@
       updateCounts();
       renderCart();
       applyFilters();
+
+      // Deep links from the contact page search (products.html#qv-ID, #filter-TYPE, #search-QUERY)
+      (function handleDeepLink() {
+        var h = location.hash || '';
+        if (h.indexOf('#qv-') === 0) {
+          var pid = decodeURIComponent(h.slice(4));
+          if (catalog[pid]) openProductModal(pid);
+        } else if (h.indexOf('#filter-') === 0) {
+          setFilter(decodeURIComponent(h.slice(8)));
+          var invF = document.getElementById('inventory');
+          if (invF) invF.scrollIntoView({ block: 'start' });
+        } else if (h.indexOf('#search-') === 0) {
+          var sq = decodeURIComponent(h.slice(8));
+          if (search) search.value = sq;
+          if (headerSearchInput) headerSearchInput.value = sq;
+          setFilter('all');
+          var invS = document.getElementById('inventory');
+          if (invS) invS.scrollIntoView({ block: 'start' });
+        }
+      })();
     }());
 
   </script>
