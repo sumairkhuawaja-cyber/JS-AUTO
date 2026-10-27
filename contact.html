@@ -62,6 +62,11 @@
        in the sticky header's search box (the box sits inside the padding zone,
        and being sticky it never moves - so the browser kept scrolling the page). */
     section[id], footer[id] { scroll-margin-top: 84px; }
+    /* Filter typing must not move the page: when a search hides most cards,
+       Chrome's scroll anchoring would otherwise jump the viewport up to the
+       grid top. Anchoring off on the grid only; deliberate jumps (Enter,
+       category, suggestion, logo) still scroll via their own handlers. */
+    #inventory { overflow-anchor: none; }
     html, body { max-width: 100%; overflow-x: clip; }
     body {
       margin: 0;
@@ -1989,15 +1994,33 @@
         if (!headerSearchInput || !search) return;
         search.value = headerSearchInput.value.trim();
         applyFilters();
-        var inv = document.getElementById('inventory');
-        if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // v61: deliberate search — clear the typing pin first, then scroll to
+        // the grid exactly as before (Enter / search button jump is intended).
+        var invT = document.getElementById('inventory');
+        if (invT) invT.style.minHeight = '';
+        if (invT) invT.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       if (headerSearchInput) {
         headerSearchInput.addEventListener('input', function () {
+          // v61: pin the page before filtering so it cannot collapse under
+          // the user while typing. Capture scroll + inventory height, filter
+          // unchanged, then hold the height while the query is non-empty and
+          // put the scroll back if it moved. Empty query releases the pin.
+          var inv = document.getElementById('inventory');
+          var capturedY = window.scrollY;
+          var capturedH = inv ? inv.offsetHeight : 0;
           if (!search) return;
           search.value = this.value;
           applyFilters();
+          if (inv) {
+            if (this.value.trim() === '') {
+              inv.style.minHeight = '';
+            } else if (inv.offsetHeight < capturedH) {
+              inv.style.minHeight = capturedH + 'px';
+            }
+            if (window.scrollY !== capturedY) window.scrollTo(0, capturedY);
+          }
         });
         headerSearchInput.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') {
@@ -2156,8 +2179,11 @@
           if (hasInventory && search) {
             search.value = label;
             applyFilters();
-            var inv = document.getElementById('inventory');
-            if (inv) inv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // v61: deliberate suggestion pick — clear the typing pin, then
+            // scroll to the grid as before (intended, like Enter).
+            var invS = document.getElementById('inventory');
+            if (invS) invS.style.minHeight = '';
+            if (invS) invS.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } else if (!hasInventory) {
             // contact.html: deep-link into the catalog page instead (nothing to filter here).
             if (kind === 'category') location.href = 'products.html#filter-' + encodeURIComponent(item.getAttribute('data-value'));
