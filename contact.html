@@ -1993,7 +1993,8 @@
       }
 
       function triggerMasterSearch() {
-        if (!headerSearchInput || !search) return;
+        if (!headerSearchInput) return;
+        if (!search) { var _cq = headerSearchInput.value.trim(); if (_cq) location.href = 'products.html#search-' + encodeURIComponent(_cq); return; }
         search.value = headerSearchInput.value.trim();
         applyFilters();
         // v61: deliberate search — clear the typing pin first, then scroll to
