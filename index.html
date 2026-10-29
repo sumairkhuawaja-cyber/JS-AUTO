@@ -2217,6 +2217,21 @@
         if (!q) return true;
         if (!/[a-z0-9]/i.test(q)) return false;
 
+        // Exact product-code queries (e.g. "js to 02", "js-to-02", "js af 05"):
+        // a spaced code was tokenised, so "to" matched Toyota/Total/Carburetor
+        // as a substring and "05" matched the year 2005, returning every *-02
+        // product and AF-10. A full code must match one product only, by its
+        // exact code token. Partial/word queries fall through unchanged.
+        var qCode = q.replace(/[^a-z0-9]/g, '');
+        if (/^js[a-z]{2}[0-9]{2}$/.test(qCode)) {
+          var codeHyphen = qCode.slice(0, 2) + '-' + qCode.slice(2, 4) + '-' + qCode.slice(4, 6);
+          var hayTokens = (hay || '').split(/\s+/);
+          for (var ti = 0; ti < hayTokens.length; ti++) {
+            if (hayTokens[ti].replace(/[^a-z0-9-]/g, '') === codeHyphen) return true;
+          }
+          return false;
+        }
+
         hay = hay || '';
         var hayClean = hay.replace(/[^a-z0-9]/g, ' ');
         var qClean = q.replace(/[^a-z0-9\-]/g, ' ').trim();
