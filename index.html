@@ -2232,6 +2232,24 @@
           return false;
         }
 
+        // Partial code-like queries starting with "js" (e.g. "js to", "js af 0", "js fo"):
+        // match by code prefix only, never by word substrings, so "js fo" (no FO
+        // code exists) returns nothing instead of the foam degreaser, and "js to"
+        // returns only TO codes, not Toyota/Total/Carburetor neighbours.
+        // Full codes are already handled above; word queries without a code
+        // structure (e.g. "js toyota", "js oil") fall through unchanged.
+        var qPartial = q.replace(/[^a-z0-9]/g, '');
+        if (/^js[a-z]{0,2}[0-9]{0,2}$/.test(qPartial) && qPartial.length > 2 && qPartial.length < 6) {
+          var hayTokens2 = (hay || '').split(/\s+/);
+          var codeNorm = '';
+          for (var tj = 0; tj < hayTokens2.length; tj++) {
+            var tokNorm = hayTokens2[tj].replace(/[^a-z0-9-]/g, '');
+            if (/^js-[a-z]{2}-[0-9]{2}$/.test(tokNorm)) { codeNorm = tokNorm.replace(/-/g, ''); break; }
+          }
+          if (!codeNorm) return false;
+          return codeNorm.indexOf(qPartial) === 0;
+        }
+
         hay = hay || '';
         var hayClean = hay.replace(/[^a-z0-9]/g, ' ');
         var qClean = q.replace(/[^a-z0-9\-]/g, ' ').trim();
