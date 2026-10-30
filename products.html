@@ -2128,20 +2128,25 @@
         }
 
         hay = hay || '';
-        var hayClean = hay.replace(/[^a-z0-9]/g, ' ');
-        var qClean = q.replace(/[^a-z0-9\-]/g, ' ').trim();
-        var words = qClean.split(/\s+/).filter(Boolean);
-        if (words.length === 0) return false;
-
-        var qPhrase = words.join(' ');
-        if (hay.indexOf(qPhrase) !== -1 || hayClean.indexOf(qPhrase) !== -1) return true;
-
-        for (var i = 0; i < words.length; i++) {
-          var w = words[i];
-          var wNoDash = w.replace(/-/g, ' ');
-          if (hay.indexOf(w) === -1 && hayClean.indexOf(w) === -1 && hayClean.indexOf(wNoDash) === -1) {
-            return false;
-          }
+        // Word searches: match whole words only, not fragments inside words.
+        // "fo" must not match "foam", "to" must not match "Toyota", "05" must
+        // not match "2005". Plural forms still match: "oil" matches "oils",
+        // "filter" matches "filters" (a trailing "s" is stripped on both sides).
+        // Hyphens become word separators, so "85w-140" matches Grade 85W-140.
+        // Full and partial codes are already handled above and never reach here.
+        function normWord(w) {
+          if (w.length > 3 && w.charAt(w.length - 1) === 's' && w.charAt(w.length - 2) !== 's') return w.slice(0, -1);
+          return w;
+        }
+        var hayWords = {};
+        var hayParts = hay.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(/\s+/);
+        for (var hi = 0; hi < hayParts.length; hi++) {
+          if (hayParts[hi]) hayWords[normWord(hayParts[hi])] = true;
+        }
+        var qWords = q.replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+        if (qWords.length === 0) return false;
+        for (var qi = 0; qi < qWords.length; qi++) {
+          if (!hayWords[normWord(qWords[qi])]) return false;
         }
         return true;
       }

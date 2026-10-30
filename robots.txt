@@ -1,4 +1,4 @@
-# JS Auto — v75 (2026-10-30)
+# JS Auto — v76 (2026-10-30)
 User-agent: *
 Allow: /
 
